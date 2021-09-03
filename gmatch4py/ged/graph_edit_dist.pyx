@@ -19,6 +19,8 @@ cdef class GraphEditDistance(AbstractGraphEditDistance):
         return self.relabel_cost(node1, node2, G, H)
 
     cpdef object relabel_cost(self, node1, node2, G, H):
+        print("il costo deve essere il peso dei nodi")
+        print(node1)
         ## Si deux noeuds égaux
         if node1 == node2 and G.degree(node1) == H.degree(node2):
             return 0.0
@@ -44,11 +46,13 @@ cdef class GraphEditDistance(AbstractGraphEditDistance):
         return sys.maxsize
 
     cdef double delete_cost(self, int i, int j, nodesG, G):
+        print("il costo deve essere zero_1")
         if i == j:
             return self.node_del+(G.degree(nodesG[i],weight=True)*self.edge_del) # Deleting a node implicate to delete in and out edges
         return sys.maxsize
 
     cdef double insert_cost(self, int i, int j, nodesH, H):
+        print("il costo deve essere zero_2")
         if i == j:
             deg=H.degree(nodesH[j],weight=True)
             if isinstance(deg,dict):deg=0
