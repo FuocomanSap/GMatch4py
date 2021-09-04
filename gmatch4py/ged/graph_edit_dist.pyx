@@ -19,11 +19,11 @@ cdef class GraphEditDistance():
         print("2")
         print(G.node(data="weight"))
         print("3")
-        print(node1)
+        print(G.nodes[node1])
         print("4")
-        #print(G[node1])
+        print(G[node1])
         print("5")
-        #print(G.nodes[node1])
+        print(G.nodes[node1])
         return 0.0
 
         return self.relabel_cost(node1, node2, G, H)
