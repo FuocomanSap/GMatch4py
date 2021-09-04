@@ -14,26 +14,52 @@ cdef class GraphEditDistance():
         self.weighted=weighted
         
     cpdef double substitute_cost(self, node1, node2, G, H):
-        print("1")
-        print(G.nodes(data=True))
-        print("2")
-        print(G.node(data="weight"))
-        print("3")
-        print(G.nodes[node1])
-        print("4")
-        print(G[node1])
-        print("5")
-        print(G.nodes[node1])
-        return 0.0
+        
+        #print("1")
+        #print(G.nodes(data=True))
+        #print("2")
+        #print(G.nodes(data="weight"))
+        #print("3")
+        #print(G.nodes[node1]['weight'])
+        #print("4")
+
+        ## node1.weight - node2.weight + GED(figli)
+
+        ##da testare ocn le print
+        nodeGData=list(G.nodes(data=True))
+        _weightG= nodeGData[1][0]["weight"]
+        nodeHData=list(H.nodes(data=True))
+        _weightH= nodeHData[1][0]["weight"]
+
+        #print("G: ")
+        #print(G)
+        #print("G1: ")
+
+        #G1=G.remove_node(node1)
+        #print(G1)
+        #H1=H.remove_node(node2)
+
+        
+        #res=self.father.compare([G1,H1],None)
+
+        return abs(_weightG-_weightH)
+
+
+
+        for i in range(m):
+            for j in range(m):
+                cost_matrix[i+n,j] = self.insert_cost(i, j, nodes2, H)
+
 
         return self.relabel_cost(node1, node2, G, H)
 
     cpdef object relabel_cost(self, node1, node2, G, H):
         #print("il costo deve essere il peso dei nodi")
         #print(node1)
-        nodesG=G.nodes()
-        cur_node=list(nodesG).index(node1)
-        print(cur_node)
+        #nodesG=G.nodes()
+        #cur_node=list(nodesG).index(node1)
+        #print(cur_node)
+
         ## Si deux noeuds égaux
         if node1 == node2 and G.degree(node1) == H.degree(node2):
             return 0.0
@@ -60,16 +86,30 @@ cdef class GraphEditDistance():
 
     cdef double delete_cost(self, int i, int j, nodesG, G):
         #print("il costo deve essere zero_1")
+        #print("nodo richiesto: " + str(nodesG[i]))
+        #print(" ivale : "+ str(i))
+        nodeGData=list(G.nodes(data=True))
+        #print(nodeGData)
+        _weight= nodeGData[1][i]["weight"]
+        #print("il peso è: "+str(_weight))
+
+        #return _weight+self.node_del+(G.degree(nodesG[i],weight=True)*self.edge_del)
 
         if i == j:
-            return self.node_del+(G.degree(nodesG[i],weight=True)*self.edge_del) # Deleting a node implicate to delete in and out edges
+            return _weight+self.node_del+(G.degree(nodesG[i],weight=True)*self.edge_del) # Deleting a node implicate to delete in and out edges
         return sys.maxsize
 
     cdef double insert_cost(self, int i, int j, nodesH, H):
         #print("il costo deve essere zero_2")
+        #print(nodesH[j])
+
+
         if i == j:
+            nodeHData=list(H.nodes(data=True))
+            _weight= nodeHData[1][j]["weight"]
+
             deg=H.degree(nodesH[j],weight=True)
             if isinstance(deg,dict):deg=0
-            return self.node_ins+(deg*self.edge_ins)
+            return _weight+self.node_ins+(deg*self.edge_ins)
         else:
             return sys.maxsize
