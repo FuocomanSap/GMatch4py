@@ -14,8 +14,16 @@ cdef class GraphEditDistance():
         self.weighted=weighted
         
     cpdef double substitute_cost(self, node1, node2, G, H):
+        print("1")
         print(G.nodes(data=True))
+        print("2")
         print(G.node(data="weight"))
+        print("3")
+        print(node1)
+        print("4")
+        #print(G[node1])
+        print("5")
+        #print(G.nodes[node1])
         return 0.0
 
         return self.relabel_cost(node1, node2, G, H)
@@ -52,6 +60,7 @@ cdef class GraphEditDistance():
 
     cdef double delete_cost(self, int i, int j, nodesG, G):
         #print("il costo deve essere zero_1")
+
         if i == j:
             return self.node_del+(G.degree(nodesG[i],weight=True)*self.edge_del) # Deleting a node implicate to delete in and out edges
         return sys.maxsize
