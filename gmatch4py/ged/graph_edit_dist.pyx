@@ -12,7 +12,8 @@ cdef class GraphEditDistance():
     def __init__(self,node_del,node_ins,edge_del,edge_ins,weighted=False):
         AbstractGraphEditDistance.__init__(self,node_del,node_ins,edge_del,edge_ins)
         self.weighted=weighted
-        
+
+
     cpdef double substitute_cost(self, node1, node2, G, H):
         
         #print("1")
@@ -41,15 +42,36 @@ cdef class GraphEditDistance():
 
         
         #res=self.father.compare([G1,H1],None)
+        #self.compare([G1,H1],None)
+        #print(self.distance_ged(G1,H1))
+
+        cur_min=sys.maxsize
+        cur_node=0
+        sumI=0
+        
+        matched=[]
+        for i in range(1,len(nodeGData[0])):
+            _weightI=nodeGData[1][i]["weight"]
+            sumI+=_weightI
+            sumJ=0
+            for j in range(1,len(nodeHData[0])):
+                _weightJ=nodeHData[1][j]["weight"]
+                sumJ+=_weightJ
+
+                if(j in matched):
+                    continue
+                
+                if(abs(_weightI-_weightJ)<cur_min):
+                    cur_min=abs(_weightI-_weightJ)
+                    cur_node=[nodeHData[0][j],nodeHData[1][j]["weight"]]
+                    print(cur_node)
+                    
+            #TODO devo retonrare in matcher [nodo,peso], sommare i pesi dei matched e poi sottrato al somma di G o H in base a chi ha piu' nodi      
+            cur_min=sys.maxsize
+            matched.append(cur_node)
+
 
         return abs(_weightG-_weightH)
-
-
-
-        for i in range(m):
-            for j in range(m):
-                cost_matrix[i+n,j] = self.insert_cost(i, j, nodes2, H)
-
 
         return self.relabel_cost(node1, node2, G, H)
 
