@@ -93,8 +93,16 @@ cdef class GraphEditDistance():
         nodeHData=list(H.nodes(data=True))
         _weightH= nodeHData[1][0]["weight"]
 
-        
+        #print("richiesto: " +  str(node1) + "il primo e' " + str(nodeGData[0][0]))
 
+       
+        if(node1==nodeGData[0][0] and node2==nodeHData[0][0]):
+            return abs(_weightG-_weightH)+self.child_ged(nodeGData,nodeHData)
+        if(node1!=nodeGData[0][0] and node2!=nodeHData[0][0]):
+            return abs(_weightG-_weightH)
+        else:
+            #print("different level")
+            return sys.maxsize
         
 
 
