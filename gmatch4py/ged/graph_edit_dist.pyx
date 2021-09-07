@@ -14,6 +14,57 @@ cdef class GraphEditDistance():
         self.weighted=weighted
 
 
+
+    cpdef double child_ged(self,nodeGData,nodeHData):
+        #TODO devo retonrare in matcher [nodo,peso], sommare i pesi dei matched e poi sottrato al somma di G o H in base a chi ha piu' nodi      
+           
+        cur_min=sys.maxsize
+        cur_node=[]
+        sumI=0
+        matched={}
+
+        for i in range(1,len(nodeGData[0])):
+            _weightI=nodeGData[1][i]["weight"]
+            sumI+=_weightI
+            sumJ=0
+            for j in range(1,len(nodeHData[0])):
+                _weightJ=nodeHData[1][j]["weight"]
+                sumJ+=_weightJ
+
+                if(matched.has_key(nodeHData[0][j])):
+                    #print("found an already matched node")
+                    continue
+                
+                if(abs(_weightI-_weightJ)<cur_min):
+                    cur_min=abs(_weightI-_weightJ)
+                    cur_node=[nodeHData[0][j],nodeHData[1][j]["weight"]]
+                    #print(cur_node)
+                    
+            cur_min=sys.maxsize
+            if(cur_node!=[]):
+                matched[cur_node[0]]=cur_node[1]
+                cur_node=[]
+
+        sum=0.0
+        #print("matched:----")
+        #print(matched)
+        for node in matched:    
+            #print(matched[node])
+            sum+=matched[node]
+        #print("matched:----")
+
+        Gsize=len(nodeGData[0])
+        Hsize=len(nodeHData[0])
+
+        if(Gsize>Hsize):
+            #print("G>H")
+            return sumI-sum
+        else:
+            #print("G<H")
+            return sumJ-sum
+
+
+
     cpdef double substitute_cost(self, node1, node2, G, H):
         
         #print("1")
@@ -23,57 +74,33 @@ cdef class GraphEditDistance():
         #print("3")
         #print(G.nodes[node1]['weight'])
         #print("4")
-
         ## node1.weight - node2.weight + GED(figli)
-
         ##da testare ocn le print
+        #print("G: ")
+        #print(G)
+        #print("G1: ")
+        #G1=G.remove_node(node1)
+        #print(G1)
+        #H1=H.remove_node(node2)
+        #res=self.father.compare([G1,H1],None)
+        #self.compare([G1,H1],None)
+        #print(self.distance_ged(G1,H1))
+
+
+
         nodeGData=list(G.nodes(data=True))
         _weightG= nodeGData[1][0]["weight"]
         nodeHData=list(H.nodes(data=True))
         _weightH= nodeHData[1][0]["weight"]
 
-        #print("G: ")
-        #print(G)
-        #print("G1: ")
-
-        #G1=G.remove_node(node1)
-        #print(G1)
-        #H1=H.remove_node(node2)
+        
 
         
-        #res=self.father.compare([G1,H1],None)
-        #self.compare([G1,H1],None)
-        #print(self.distance_ged(G1,H1))
-
-        cur_min=sys.maxsize
-        cur_node=0
-        sumI=0
-        
-        matched=[]
-        for i in range(1,len(nodeGData[0])):
-            _weightI=nodeGData[1][i]["weight"]
-            sumI+=_weightI
-            sumJ=0
-            for j in range(1,len(nodeHData[0])):
-                _weightJ=nodeHData[1][j]["weight"]
-                sumJ+=_weightJ
-
-                if(j in matched):
-                    continue
-                
-                if(abs(_weightI-_weightJ)<cur_min):
-                    cur_min=abs(_weightI-_weightJ)
-                    cur_node=[nodeHData[0][j],nodeHData[1][j]["weight"]]
-                    print(cur_node)
-                    
-            #TODO devo retonrare in matcher [nodo,peso], sommare i pesi dei matched e poi sottrato al somma di G o H in base a chi ha piu' nodi      
-            cur_min=sys.maxsize
-            matched.append(cur_node)
 
 
-        return abs(_weightG-_weightH)
+        return abs(_weightG-_weightH)+self.child_ged(nodeGData,nodeHData)
 
-        return self.relabel_cost(node1, node2, G, H)
+        #return self.relabel_cost(node1, node2, G, H)
 
     cpdef object relabel_cost(self, node1, node2, G, H):
         #print("il costo deve essere il peso dei nodi")
