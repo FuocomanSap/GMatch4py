@@ -9,3 +9,4 @@ cdef class GraphEditDistance(AbstractGraphEditDistance):
     cdef double delete_cost(self, int i, int j, nodesG, G)
     cdef double insert_cost(self, int i, int j, nodesH, H)
     cpdef double child_ged(self,nodeGData,nodeHData)
+    cpdef double sum_child(self,nodeGData)

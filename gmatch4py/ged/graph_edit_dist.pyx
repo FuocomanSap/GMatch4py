@@ -14,6 +14,12 @@ cdef class GraphEditDistance():
         self.weighted=weighted
 
 
+    cpdef double sum_child(self,nodeGData):
+        sum=0
+        for i in range(1,len(nodeGData[0])):
+            sum+=nodeGData[1][i]["weight"]
+        return sum
+
 
     cpdef double child_ged(self,nodeGData,nodeHData):
         #TODO devo retonrare in matcher [nodo,peso], sommare i pesi dei matched e poi sottrato al somma di G o H in base a chi ha piu' nodi      
@@ -45,7 +51,7 @@ cdef class GraphEditDistance():
                 matched[cur_node[0]]=cur_node[1]
                 cur_node=[]
 
-        sum=0.0
+        sum=0
         #print("matched:----")
         #print(matched)
         for node in matched:    
@@ -95,14 +101,21 @@ cdef class GraphEditDistance():
 
         #print("richiesto: " +  str(node1) + "il primo e' " + str(nodeGData[0][0]))
 
-       
+        #both root
         if(node1==nodeGData[0][0] and node2==nodeHData[0][0]):
             return abs(_weightG-_weightH)+self.child_ged(nodeGData,nodeHData)
+        
+        #both not root
         if(node1!=nodeGData[0][0] and node2!=nodeHData[0][0]):
             return abs(_weightG-_weightH)
-        else:
-            #print("different level")
-            return sys.maxsize
+        
+        #node1 is a root but node2
+        if(node1==nodeGData[0][0] and node2!=nodeHData[0][0]):
+            return abs(_weightG-_weightH)+self.sum_child(nodeGData)
+        
+        #node2 is a root but node1
+        if(node1!=nodeGData[0][0] and node2==nodeHData[0][0]):
+            return abs(_weightG-_weightH)+self.sum_child(nodeHData)
         
 
 
