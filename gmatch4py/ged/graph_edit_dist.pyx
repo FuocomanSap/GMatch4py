@@ -22,12 +22,13 @@ cdef class GraphEditDistance():
 
 
     cpdef double child_ged(self,nodeGData,nodeHData):
-        #TODO devo retonrare in matcher [nodo,peso], sommare i pesi dei matched e poi sottrato al somma di G o H in base a chi ha piu' nodi      
+       #calcolo la ged sui figli, sommo i pesi delle substituion+pes dei nodi che non vengono matchati(eliminati)     
            
         cur_min=sys.maxsize
         cur_node=[]
         sumI=0
         matched={}
+        matchedG={}
 
         for i in range(1,len(nodeGData[0])):
             _weightI=nodeGData[1][i]["weight"]
@@ -48,27 +49,31 @@ cdef class GraphEditDistance():
                     
             cur_min=sys.maxsize
             if(cur_node!=[]):
-                matched[cur_node[0]]=cur_node[1]
+                #matched[cur_node[0]]=cur_node[1]
+                matched[cur_node[0]]=abs(_weightI-cur_node[1])
+                matchedG[nodeGData[0][i]]=nodeGData[1][i]["weight"]
                 cur_node=[]
 
         sum=0
-        #print("matched:----")
-        #print(matched)
         for node in matched:    
             #print(matched[node])
             sum+=matched[node]
-        #print("matched:----")
+        
+        for i in range(1,len(nodeGData[0])):
+                if(matchedG.has_key(nodeGData[0][i])):
+                    continue
+                else:
+                    sum+=nodeGData[1][i]["weight"]
 
-        Gsize=len(nodeGData[0])
-        Hsize=len(nodeHData[0])
 
-        if(Gsize>Hsize):
-            #print("G>H")
-            return sumI-sum
-        else:
-            #print("G<H")
-            return sumJ-sum
-
+        for j in range(1,len(nodeHData[0])):
+                if(matched.has_key(nodeHData[0][j])):
+                    continue
+                else:
+                    sum+=nodeHData[1][j]["weight"]
+        
+        return sum
+                
 
 
     cpdef double substitute_cost(self, node1, node2, G, H):
