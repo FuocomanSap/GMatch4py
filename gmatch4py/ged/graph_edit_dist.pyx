@@ -13,6 +13,25 @@ cdef class GraphEditDistance():
         AbstractGraphEditDistance.__init__(self,node_del,node_ins,edge_del,edge_ins)
         self.weighted=weighted
 
+    cpdef double get_weight(self,node,nodeGData):
+        _weight=0
+        for i in range(0,len(nodeGData[0])):
+            if(nodeGData[0][i]==node):
+                _weight=nodeGData[1][i]["weight"]
+                return _weight
+        print("ERROR IN GET_WIGHT GRAPH_EDIT_DISTANCE.pyc")
+        return _weight
+        
+
+
+    cpdef double sum_nodes(self,nodeGData):
+        sum=0
+        for i in range(0,len(nodeGData[0])):
+            sum+=nodeGData[1][i]["weight"]
+        return sum
+
+
+
 
     cpdef double sum_child(self,nodeGData):
         sum=0
@@ -59,13 +78,14 @@ cdef class GraphEditDistance():
             #print(matched[node])
             sum+=matched[node]
         
+        #now sum all the ones that now should be remove/add from G
         for i in range(1,len(nodeGData[0])):
                 if(matchedG.has_key(nodeGData[0][i])):
                     continue
                 else:
                     sum+=nodeGData[1][i]["weight"]
 
-
+        #now sum all the ones that now should be remove/add from H
         for j in range(1,len(nodeHData[0])):
                 if(matched.has_key(nodeHData[0][j])):
                     continue
@@ -100,9 +120,12 @@ cdef class GraphEditDistance():
 
         
         nodeGData=list(G.nodes(data=True))
-        _weightG= nodeGData[1][0]["weight"]
         nodeHData=list(H.nodes(data=True))
-        _weightH= nodeHData[1][0]["weight"]
+        _weightG=self.get_weight(node1,nodeGData)
+        _weightH=self.get_weight(node2,nodeHData)
+
+        #_weightG= nodeGData[1][0]["weight"]
+        #_weightH= nodeHData[1][0]["weight"]
 
         #print("richiesto: " +  str(node1) + "il primo e' " + str(nodeGData[0][0]))
 
@@ -116,11 +139,11 @@ cdef class GraphEditDistance():
         
         #node1 is a root but node2
         if(node1==nodeGData[0][0] and node2!=nodeHData[0][0]):
-            return abs(_weightG-_weightH)+self.sum_child(nodeGData)
+            return abs(_weightG-_weightH)+self.sum_child(nodeGData)+self.sum_nodes(nodeHData)-_weightH
         
         #node2 is a root but node1
         if(node1!=nodeGData[0][0] and node2==nodeHData[0][0]):
-            return abs(_weightG-_weightH)+self.sum_child(nodeHData)
+            return abs(_weightG-_weightH)+self.sum_child(nodeHData)+self.sum_nodes(nodeGData)-_weightG
         
 
 
