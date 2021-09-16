@@ -120,6 +120,7 @@ cdef class GraphEditDistance():
 
         
         nodeGData=list(G.nodes(data=True))
+        
         nodeHData=list(H.nodes(data=True))
         _weightG=self.get_weight(node1,nodeGData)
         _weightH=self.get_weight(node2,nodeHData)

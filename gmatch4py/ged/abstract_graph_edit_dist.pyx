@@ -89,7 +89,7 @@ cdef class AbstractGraphEditDistance(Base):
             edit path
         """
         cdef np.ndarray cost_matrix = self.create_cost_matrix(G,H).astype(float)
-        return cost_matrix[munkres(cost_matrix)].tolist()
+        return cost_matrix[munkres(cost_matrix,np.ndarray(1))].tolist()
 
     cpdef np.ndarray create_cost_matrix(self, G, H):
         """
