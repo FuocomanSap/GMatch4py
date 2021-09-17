@@ -88,8 +88,14 @@ cdef class AbstractGraphEditDistance(Base):
         np.array 
             edit path
         """
+        #cdef np.ndarray match_array = np.arange(15).astype(int)
+        cdef np.ndarray match_array = np.zeros((1,15)).astype(float)
+        for i in range(0,15):
+            match_array[0][i]=42+i
+
+
         cdef np.ndarray cost_matrix = self.create_cost_matrix(G,H).astype(float)
-        return cost_matrix[munkres(cost_matrix,np.ndarray(1))].tolist()
+        return cost_matrix[munkres(cost_matrix,match_array)].tolist()
 
     cpdef np.ndarray create_cost_matrix(self, G, H):
         """
