@@ -10,8 +10,13 @@ cdef class AbstractGraphEditDistance(Base):
     cdef np.ndarray cost_matrix
     cdef bint weighted
 
+
+    cpdef np.ndarray compare_alternative(self,list listgs, list selected,np.ndarray match_array)
+
     cpdef double distance_ged(self,G,H)
+    cpdef double distance_ged_alternative(self,G,H,np.ndarray match_array)
     cdef list edit_costs(self,G,H)
+    cdef list edit_costs_alternative(self,G,H,np.ndarray match_array)
     cpdef np.ndarray create_cost_matrix(self,G,H)
     cdef double insert_cost(self, int i, int j, nodesH, H)
     cdef double delete_cost(self, int i, int j, nodesG, G)

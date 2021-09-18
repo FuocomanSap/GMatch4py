@@ -48,7 +48,30 @@ cdef class AbstractGraphEditDistance(Base):
         int 
             distance
         """
+        
         cdef list opt_path = self.edit_costs(G,H)
+        
+        return np.sum(opt_path)
+
+    cpdef double distance_ged_alternative(self,G,H,np.ndarray match_array):
+        """
+        Return the distance value between G and H
+        
+        Parameters
+        ----------
+        G : gmatch4py.Graph
+            graph
+        H : gmatch4py.Graph
+            graph
+        
+        Returns
+        -------
+        int 
+            distance
+        """
+        
+        cdef list opt_path = self.edit_costs_alternative(G,H,match_array)
+        
         return np.sum(opt_path)
 
     def edit_path(self,G,H):
@@ -88,13 +111,48 @@ cdef class AbstractGraphEditDistance(Base):
         np.array 
             edit path
         """
+        """
         #cdef np.ndarray match_array = np.arange(15).astype(int)
-        cdef np.ndarray match_array = np.zeros((1,15)).astype(float)
-        for i in range(0,15):
-            match_array[0][i]=42+i
+        #cdef np.ndarray match_array = np.zeros((1,15)).astype(float)
+        #for i in range(0,15):
+            #match_array[0][i]=42+i
 
-
+        #print(match_array)
+        """
         cdef np.ndarray cost_matrix = self.create_cost_matrix(G,H).astype(float)
+
+        return cost_matrix[munkres(cost_matrix)].tolist()
+
+
+
+    cdef list edit_costs_alternative(self, G, H, np.ndarray match_array):
+        """
+        Return the optimal path edit cost list, to transform G into H
+        
+        Parameters
+        ----------
+        G : gmatch4py.Graph
+            graph
+        H : gmatch4py.Graph
+            graph
+        
+        Returns
+        -------
+        np.array 
+            edit path
+        """
+        """
+        #cdef np.ndarray match_array = np.arange(15).astype(int)
+        #cdef np.ndarray match_array = np.zeros((1,15)).astype(float)
+        #for i in range(0,15):
+            #match_array[0][i]=42+i
+
+        #print(match_array)
+        """
+        cdef np.ndarray cost_matrix = self.create_cost_matrix(G,H).astype(float)
+
+        
+        
         return cost_matrix[munkres(cost_matrix,match_array)].tolist()
 
     cpdef np.ndarray create_cost_matrix(self, G, H):
@@ -201,3 +259,29 @@ cdef class AbstractGraphEditDistance(Base):
                         comparison_matrix[i][j] = inf
                 #comparison_matrix[j, i] = comparison_matrix[i, j]
         return np.array(comparison_matrix)
+
+
+    cpdef np.ndarray compare_alternative(self,list listgs, list selected,np.ndarray match_array):
+        cdef int n = len(listgs)
+        cdef double[:,:] comparison_matrix = np.zeros((n, n))
+        listgs=parsenx2graph(listgs,self.node_attr_key,self.edge_attr_key)
+        cdef long[:] n_nodes = np.array([g.size() for g in listgs])
+        cdef double[:] selected_test = np.array(self.get_selected_array(selected,n))
+        cdef int i,j
+        cdef float inf=np.inf
+
+        
+        with nogil, parallel(num_threads=self.cpu_count):
+            for i in prange(n,schedule='static'):
+                for j in range(n):
+                    if n_nodes[i]>0 and n_nodes[j]>0 and selected_test[i] == 1 :
+                        with gil:
+                            comparison_matrix[i][j] = self.distance_ged_alternative(listgs[i],listgs[j],match_array)
+                    else:
+                        comparison_matrix[i][j] = inf
+                #comparison_matrix[j, i] = comparison_matrix[i, j]
+
+    
+        return np.array(comparison_matrix)
+
+    
