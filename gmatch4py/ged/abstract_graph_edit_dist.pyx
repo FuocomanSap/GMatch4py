@@ -150,9 +150,10 @@ cdef class AbstractGraphEditDistance(Base):
         #print(match_array)
         """
         cdef np.ndarray cost_matrix = self.create_cost_matrix(G,H).astype(float)
-
-        
-        
+        #print(cost_matrix)
+        #cost_matrix[munkres(cost_matrix,match_array)].tolist()
+        #res = cost_matrix[munkres(cost_matrix,match_array)]
+        #print(res)
         return cost_matrix[munkres(cost_matrix,match_array)].tolist()
 
     cpdef np.ndarray create_cost_matrix(self, G, H):
@@ -276,7 +277,7 @@ cdef class AbstractGraphEditDistance(Base):
                 for j in range(n):
                     if n_nodes[i]>0 and n_nodes[j]>0 and selected_test[i] == 1 :
                         with gil:
-                            comparison_matrix[i][j] = self.distance_ged_alternative(listgs[i],listgs[j],match_array)
+                            comparison_matrix[i][j] = self.distance_ged_alternative(listgs[i],listgs[j],match_array[j])
                     else:
                         comparison_matrix[i][j] = inf
                 #comparison_matrix[j, i] = comparison_matrix[i, j]

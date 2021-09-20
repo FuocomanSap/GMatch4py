@@ -184,18 +184,18 @@ cdef class GraphEditDistance():
         return sys.maxsize
 
     cdef double delete_cost(self, int i, int j, nodesG, G):
-        #print("il costo deve essere zero_1")
-        #print("nodo richiesto: " + str(nodesG[i]))
-        #print(" ivale : "+ str(i))
+        
         nodeGData=list(G.nodes(data=True))
         #print(nodeGData)
         _weight= nodeGData[1][i]["weight"]
-        #print("il peso è: "+str(_weight))
-
-        #return _weight+self.node_del+(G.degree(nodesG[i],weight=True)*self.edge_del)
 
         if i == j:
-            return _weight+self.node_del+(G.degree(nodesG[i],weight=True)*self.edge_del) # Deleting a node implicate to delete in and out edges
+            penalty=0
+            if(nodeGData[0][i]==nodeGData[0][0]):
+                penalty=_weight*100
+                return sys.maxsize
+
+            return penalty+_weight+self.node_del+(G.degree(nodesG[i],weight=True)*self.edge_del) # Deleting a node implicate to delete in and out edges
         return sys.maxsize
 
     cdef double insert_cost(self, int i, int j, nodesH, H):
