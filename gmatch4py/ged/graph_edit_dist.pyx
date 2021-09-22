@@ -191,7 +191,7 @@ cdef class GraphEditDistance():
 
         if i == j:
             penalty=0
-            if(nodeGData[0][i]==nodeGData[0][0]):
+            if(nodeGData[0][i]==nodeGData[0][0]): #vuoi eliminare il padre
                 penalty=_weight*100
                 return sys.maxsize
 
