@@ -40,7 +40,107 @@ cdef class GraphEditDistance():
         return sum
 
 
+
+    cpdef double delete_matched_node(self,ged_matrix,current_min_dict):
+        for i in range(1,len(ged_matrix)+1):
+            ged_matrix[i][current_min_dict[2]-1]=sys.maxsize
+        return 0
+
+    cpdef double get_min_from_dict(self,dest_dict,current_min_dict):
+        cur_min=sys.maxsize
+        for i in dest_dict:
+            if(dest_dict[i][1]<cur_min and dest_dict[i][0]!=-1):
+                cur_min=dest_dict[i][1]
+                #print("new min fondued")
+                #current_min_dict=[i,dest_dict[i][1],dest_dict[i][0]] #[node_x,ged,node_y]
+                current_min_dict[0]=i
+                current_min_dict[1]=dest_dict[i][1]
+                current_min_dict[2]=dest_dict[i][0]
+
+        if(cur_min==sys.maxsize):
+            current_min_dict[0]=-1
+            current_min_dict[1]=-1
+            current_min_dict[2]=-1
+        return 0
+
+    cpdef double gen_min_dict(self,ged_matrix,dest_dict,matched):
+        #dest_dict[x1]=[y_#,ged]
+        #dest_dict[x2]=[y_#,ged]
+        for i in range(1,len(ged_matrix)+1):
+            #print(i)
+            if(i in matched):
+                dest_dict[i]=[-1,sys.maxsize]
+                continue
+            
+            current_node=0
+            current_min=sys.maxsize
+            for j in range(0,len(ged_matrix[i])):
+                if(ged_matrix[i][j]<current_min):
+                    current_min=ged_matrix[i][j]
+                    current_node=j+1
+            if(current_min!=sys.maxsize):
+                #print("new possibile min")
+                dest_dict[i]=[current_node,current_min]
+            else:
+                dest_dict[i]=[-1,sys.maxsize]
+        return 0
+
+
+
     cpdef double child_ged(self,nodeGData,nodeHData):
+        #calcolo la ged sui figli, sommo i pesi delle substituion+pes dei nodi che non vengono matchati(eliminati)
+        sum=0
+        ged_matrix={} #ged_matrix[x1]=[cost_y1,cost_y2,....,cost_yn]
+        for i in range(1,len(nodeGData[0])):
+            _weightI=nodeGData[1][i]["weight"]
+            ged_matrix[i]=[]
+            for j in range(1,len(nodeHData[0])):
+                _weightJ=nodeHData[1][j]["weight"]
+                diff=abs(_weightI-_weightJ)
+                ged_matrix[i].append(diff)
+        
+        matchedG=[]
+        matchedH=[]
+        for i in range(1,len(nodeGData[0])):
+            dest_dict={}
+            current_min_dict=[-2,-2,-2]
+
+            self.gen_min_dict(ged_matrix,dest_dict,matchedG)
+            #print(dest_dict)
+
+            
+            res=self.get_min_from_dict(dest_dict,current_min_dict)
+            #print(current_min_dict)
+            
+            
+            if(current_min_dict[0]==-1):
+                #print("finiti i nodi matchabuli")
+                break
+            
+            matchedG.append(current_min_dict[0])
+            matchedH.append(current_min_dict[2])
+            sum+=current_min_dict[1]
+            res=self.delete_matched_node(ged_matrix,current_min_dict)
+        
+
+        #now sum all the ones that now should be remove/add from G
+        for i in range(1,len(nodeGData[0])):
+                if(not i in matchedG):
+                    sum+=nodeGData[1][i]["weight"]
+        
+
+        #now sum all the ones that now should be remove/add from H
+        for j in range(1,len(nodeHData[0])):
+                if(not j in matchedH):
+                    sum+=nodeHData[1][j]["weight"]
+
+
+        return sum
+
+        
+
+
+    cpdef double _old_child_ged(self,nodeGData,nodeHData):
        #calcolo la ged sui figli, sommo i pesi delle substituion+pes dei nodi che non vengono matchati(eliminati)     
            
         cur_min=sys.maxsize
