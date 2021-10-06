@@ -129,11 +129,12 @@ cdef class GraphEditDistance():
                     sum+=nodeGData[1][i]["weight"]
         
 
+        return sum
+
         #now sum all the ones that now should be remove/add from H
         for j in range(1,len(nodeHData[0])):
                 if(not j in matchedH):
                     sum+=nodeHData[1][j]["weight"]
-
 
         return sum
 
@@ -178,6 +179,8 @@ cdef class GraphEditDistance():
             #print(matched[node])
             sum+=matched[node]
         
+
+        
         #now sum all the ones that now should be remove/add from G
         for i in range(1,len(nodeGData[0])):
                 if(matchedG.has_key(nodeGData[0][i])):
@@ -185,6 +188,7 @@ cdef class GraphEditDistance():
                 else:
                     sum+=nodeGData[1][i]["weight"]
 
+        
         #now sum all the ones that now should be remove/add from H
         for j in range(1,len(nodeHData[0])):
                 if(matched.has_key(nodeHData[0][j])):
