@@ -130,7 +130,7 @@ cdef class GraphEditDistance():
         
 
         
-        return sum
+        # return sum
         #now sum all the ones that now should be remove/add from H
         for j in range(1,len(nodeHData[0])):
                 if(not j in matchedH):
