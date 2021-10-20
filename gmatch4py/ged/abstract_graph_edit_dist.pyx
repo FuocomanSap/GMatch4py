@@ -53,7 +53,7 @@ cdef class AbstractGraphEditDistance(Base):
         
         return np.sum(opt_path)
 
-    cpdef double distance_ged_alternative(self,G,H,np.ndarray match_array):
+    cpdef double distance_ged_alternative(self,G,H,np.ndarray match_array,np.ndarray matched_dict):
         """
         Return the distance value between G and H
         
@@ -70,7 +70,7 @@ cdef class AbstractGraphEditDistance(Base):
             distance
         """
         
-        cdef list opt_path = self.edit_costs_alternative(G,H,match_array)
+        cdef list opt_path = self.edit_costs_alternative(G,H,match_array,matched_dict)
         
         return np.sum(opt_path)
 
@@ -125,7 +125,7 @@ cdef class AbstractGraphEditDistance(Base):
 
 
 
-    cdef list edit_costs_alternative(self, G, H, np.ndarray match_array):
+    cdef list edit_costs_alternative(self, G, H, np.ndarray match_array,np.ndarray matched_dict):
         """
         Return the optimal path edit cost list, to transform G into H
         
@@ -149,7 +149,13 @@ cdef class AbstractGraphEditDistance(Base):
 
         #print(match_array)
         """
-        cdef np.ndarray cost_matrix = self.create_cost_matrix(G,H).astype(float)
+        cdef np.ndarray cost_matrix
+        if(len(match_array)>1 and int(match_array[1])==-15): #-15 == do this if
+            cost_matrix = self.create_cost_matrix_alternative(G,H,matched_dict).astype(float)
+            
+        else:
+            #cdef np.ndarray cost_matrix = self.create_cost_matrix(G,H).astype(float)
+            cost_matrix = self.create_cost_matrix(G,H).astype(float)
         #print(cost_matrix)
         #cost_matrix[munkres(cost_matrix,match_array)].tolist()
         #res = cost_matrix[munkres(cost_matrix,match_array)]
@@ -196,6 +202,70 @@ cdef class AbstractGraphEditDistance(Base):
         for i in range(n):
             for j in range(m):
                 cost_matrix[i,j] = self.substitute_cost(nodes1[i], nodes2[j], G, H)
+
+        for i in range(m):
+            for j in range(m):
+                cost_matrix[i+n,j] = self.insert_cost(i, j, nodes2, H)
+
+        for i in range(n):
+            for j in range(n):
+                cost_matrix[j,i+m] = self.delete_cost(i, j, nodes1, G)
+
+        return cost_matrix
+
+
+    cpdef np.ndarray create_cost_matrix_alternative(self, G, H,np.ndarray already_matched_array):
+        """
+        Creates a |N+M| X |N+M| cost matrix between all nodes in
+        graphs G and H
+        Each cost represents the cost of substituting,
+        deleting or inserting a node
+        The cost matrix consists of four regions:
+
+        substitute 	| insert costs
+        -------------------------------
+        delete 		| delete -> delete
+
+        The delete -> delete region is filled with zeros
+        
+        Parameters
+        ----------
+        G : gmatch4py.Graph
+            graph
+        H : gmatch4py.Graph
+            graph
+        
+        Returns
+        -------
+        np.array 
+            cost matrix
+        """
+        cdef int n,m
+        try:
+            n = G.number_of_nodes()
+            m = H.number_of_nodes()
+        except:
+            n = G.size()
+            m = H.size()
+        cdef np.ndarray cost_matrix = np.zeros((n+m,n+m))
+        cdef list nodes1 = list(G.nodes())
+        cdef list nodes2 = list(H.nodes())
+        cdef int i,j
+
+        #print(nodes1)
+        #print(nodes2)
+        #print(already_matched_array)
+        for i in range(n):
+            for j in range(m):
+                if(float(already_matched_array[int(nodes1[i])])==float(-1) and float(nodes2[int(j)]) not in already_matched_array):
+                    #print("new for " + str(nodes1[i]) + " - " +str(nodes2[int(j)]))
+                    cost_matrix[i,j] = self.substitute_cost(nodes1[i], nodes2[j], G, H)
+                elif(float(already_matched_array[int(nodes1[i])])==float(nodes2[int(j)])):
+                    #print("cas for " + str(nodes1[i]) + " - " +str(nodes2[int(j)]))
+                    cost_matrix[i,j] = 0
+                else:
+                    #print("tre for " + str(nodes1[i]) + " - " +str(nodes2[int(j)]))
+                    cost_matrix[i,j] = sys.maxsize
 
         for i in range(m):
             for j in range(m):
@@ -262,7 +332,7 @@ cdef class AbstractGraphEditDistance(Base):
         return np.array(comparison_matrix)
 
 
-    cpdef np.ndarray compare_alternative(self,list listgs, list selected,np.ndarray match_array):
+    cpdef np.ndarray compare_alternative(self,list listgs, list selected,np.ndarray match_array, np.ndarray matched_dict):
         cdef int n = len(listgs)
         cdef double[:,:] comparison_matrix = np.zeros((n, n))
         listgs=parsenx2graph(listgs,self.node_attr_key,self.edge_attr_key)
@@ -277,7 +347,7 @@ cdef class AbstractGraphEditDistance(Base):
                 for j in range(n):
                     if n_nodes[i]>0 and n_nodes[j]>0 and selected_test[i] == 1 :
                         with gil:
-                            comparison_matrix[i][j] = self.distance_ged_alternative(listgs[i],listgs[j],match_array[j])
+                            comparison_matrix[i][j] = self.distance_ged_alternative(listgs[i],listgs[j],match_array[j],matched_dict)
                     else:
                         comparison_matrix[i][j] = inf
                 #comparison_matrix[j, i] = comparison_matrix[i, j]
