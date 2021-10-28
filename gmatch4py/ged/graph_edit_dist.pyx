@@ -236,18 +236,22 @@ cdef class GraphEditDistance():
 
         #both root
         if(node1==nodeGData[0][0] and node2==nodeHData[0][0]):
+            #print(abs(_weightG-_weightH)+self.child_ged(nodeGData,nodeHData))
             return abs(_weightG-_weightH)+self.child_ged(nodeGData,nodeHData)
         
         #both not root
         if(node1!=nodeGData[0][0] and node2!=nodeHData[0][0]):
+            #print(abs(_weightG-_weightH))
             return abs(_weightG-_weightH)
         
         #node1 is a root but node2
         if(node1==nodeGData[0][0] and node2!=nodeHData[0][0]):
+            #print("node1 is but nod2:" + str(abs(_weightG-_weightH)+self.sum_child(nodeGData)+self.sum_nodes(nodeHData)-_weightH))
             return abs(_weightG-_weightH)+self.sum_child(nodeGData)+self.sum_nodes(nodeHData)-_weightH
         
         #node2 is a root but node1
         if(node1!=nodeGData[0][0] and node2==nodeHData[0][0]):
+            #print("node2 is but nod1:" + str(abs(_weightG-_weightH)+self.sum_child(nodeHData)+self.sum_nodes(nodeGData)-_weightG))
             return abs(_weightG-_weightH)+self.sum_child(nodeHData)+self.sum_nodes(nodeGData)-_weightG
         
 
@@ -298,7 +302,7 @@ cdef class GraphEditDistance():
             if(nodeGData[0][i]==nodeGData[0][0]): #vuoi eliminare il padre
                 penalty=_weight*100
                 return sys.maxsize
-
+            return _weight #sono un babbo
             return penalty+_weight+self.node_del+(G.degree(nodesG[i],weight=True)*self.edge_del) # Deleting a node implicate to delete in and out edges
         return sys.maxsize
 
@@ -313,6 +317,7 @@ cdef class GraphEditDistance():
 
             deg=H.degree(nodesH[j],weight=True)
             if isinstance(deg,dict):deg=0
+            return _weight #sono un babbo
             return _weight+self.node_ins+(deg*self.edge_ins)
         else:
             return sys.maxsize
